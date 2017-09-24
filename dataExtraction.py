@@ -11,19 +11,33 @@ import datetime as dt
 
 
 
+import os
+import glob
+
+
+
+
 patientid = '97810'
 
+path = 'C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+patientid
+extension = 'csv'
+os.chdir(path)
+result = [i for i in glob.glob('*breathingrate*.{}'.format(extension))]
+#print(result)
+recordedDateTup= tuple([x[-12:-4] for x in result])
 
-recordedDateTup = ('01142017','01152017','01162017','01172017','01182017','01192017','01202017','01212017',
-'01222017','01232017','01242017','01252017','01262017','01272017','01282017','01292017','01302017','02012017',
-'02022017','02032017','02042017','02052017','02062017','02072017','02082017','02092017','02102017','02112017',
-'02122017','02132017','02142017','02152017','02162017','02172017','02182017','02192017','02202017','02212017',
-'02222017','02232017','02242017','02252017','02262017','02272017','02282017','03012017','03022017','03032017',
-'03042017','03052017','03062017')
+#recordedDateTup = ('01142017','01152017','01162017','01172017','01182017','01192017','01202017','01212017',
+#'01222017','01232017','01242017','01252017','01262017','01272017','01282017','01292017','01302017','02012017',
+#'02022017','02032017','02042017','02052017','02062017','02072017','02082017','02092017','02102017','02112017',
+#'02122017','02132017','02142017','02152017','02162017','02172017','02182017','02192017','02202017','02212017',
+#'02222017','02232017','02242017','02252017','02262017','02272017','02282017','03012017','03022017','03032017',
+#'03042017','03052017','03062017')
+
+
 
 #recordedDateTup = ('01262017','01142017')
-for i in range(0,len(recordedDateTup)):
-    recordedDate = recordedDateTup[i]
+for j in range(0,len(recordedDateTup)):
+    recordedDate = recordedDateTup[j]
 
 
 
@@ -91,7 +105,7 @@ for i in range(0,len(recordedDateTup)):
     except:
         pass
 
-    opPath=('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+'preProcessed_'+recordedDate+'.csv')
+    opPath=('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+'preProcessed_'+recordedDate+'_'+patientid+'.csv')
     df_resample.to_csv(opPath, sep=',', encoding='utf-8')
     #df_resample.to_csv('C:/Users/sudat/Downloads/Mayo Clinic project/Data/example.csv')
 
