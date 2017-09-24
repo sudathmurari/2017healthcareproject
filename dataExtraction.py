@@ -8,16 +8,11 @@ Created on Wed Jul  5 17:59:25 2017
 import pandas as pd
 import numpy as np
 import datetime as dt
-
-
-
 import os
 import glob
 
 
-
-
-patientid = '97810'
+patientid = '102243'#102243
 
 path = 'C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+patientid
 extension = 'csv'
@@ -26,16 +21,10 @@ result = [i for i in glob.glob('*breathingrate*.{}'.format(extension))]
 #print(result)
 recordedDateTup= tuple([x[-12:-4] for x in result])
 
-#recordedDateTup = ('01142017','01152017','01162017','01172017','01182017','01192017','01202017','01212017',
-#'01222017','01232017','01242017','01252017','01262017','01272017','01282017','01292017','01302017','02012017',
-#'02022017','02032017','02042017','02052017','02062017','02072017','02082017','02092017','02102017','02112017',
-#'02122017','02132017','02142017','02152017','02162017','02172017','02182017','02192017','02202017','02212017',
-#'02222017','02232017','02242017','02252017','02262017','02272017','02282017','03012017','03022017','03032017',
-#'03042017','03052017','03062017')
 
 
 
-#recordedDateTup = ('01262017','01142017')
+#recordedDateTup = ('01142017','01262017')
 for j in range(0,len(recordedDateTup)):
     recordedDate = recordedDateTup[j]
 
@@ -102,10 +91,39 @@ for j in range(0,len(recordedDateTup)):
         df_resample[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']] = df_resample[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']].ffill().bfill()
         df_resample[np.isnan(df_resample[['AC1','AC2','AC3','AC4','AC5']])] = 0
         df_resample[np.isnan(df_resample[['BP1','BP2','BP3','BP4','BP5']])] = 5
+        df_resample = df_resample.fillna(0)
     except:
         pass
 
-    opPath=('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+'preProcessed_'+recordedDate+'_'+patientid+'.csv')
+
+    featureMeasured = 'eventmarkers'
+    fileName = patientid+ '_'+featureMeasured+ '_'+ recordedDate+ '.csv'
+    filePath = ('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+patientid+ '/' + fileName)
+    df = pd.read_csv(filePath)
+    df[' Marker Date'] = pd.to_datetime(df[' Marker Date'], infer_datetime_format=True)
+    df_resample_EV = df[['Type Id',' Marker Date']]
+    df_resample_EV=df_resample_EV.set_index(' Marker Date')
+    reqTypeId = (26,29,36,39,56,57,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,79,80,81,82,83,84,85,86,87,88,92,93,128,129)
+    for k in reqTypeId:
+        colName = ('Type_Id_'+str(k))
+        df_resample_EV[colName] = 0
+    for l in range(0,len(df_resample_EV)):
+        typeId = df_resample_EV['Type Id'].iloc[l]
+        if typeId in reqTypeId:
+            df_resample_EV['Type_Id_'+str(typeId)].iloc[l] = 1
+
+    df_resample_EV = df_resample_EV.resample('5min', how=np.sum)
+    del df_resample_EV['Type Id']
+    df_resample_EV = df_resample_EV.fillna(0)
+#    df_resample_EV['Index'] = pd.date_range(pd.to_datetime(str(recordedDate), format = '%m%d%Y'), periods=288, freq='5T')
+#    df_resample_EV=df_resample_bp.set_index('Index')
+    try:
+        df_resample = df_resample.join(df_resample_EV, how='outer')
+    except:
+        pass
+
+    df_resample = df_resample.fillna(0)
+    opPath=('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+patientid+'/preProcessed_'+recordedDate+'_'+patientid+'.csv')
     df_resample.to_csv(opPath, sep=',', encoding='utf-8')
     #df_resample.to_csv('C:/Users/sudat/Downloads/Mayo Clinic project/Data/example.csv')
 
