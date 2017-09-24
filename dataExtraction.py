@@ -16,7 +16,7 @@ from time import sleep
 
 # list all the patient id, the folder names must be patient id
 patientidtup = ('102243', '97810', '82920', '78850', '70921', '9406', '8829', '8246', '7984', '7983')#'102243',
-#patientidtup = ( '7984', '8246')#'102243',
+#patientidtup = ( '102243', '97810')#'102243',
 
 # iterate thru each patient
 for p in range(0,len(patientidtup)):
@@ -35,7 +35,11 @@ for p in range(0,len(patientidtup)):
     #print(result)
     recordedDateTup= tuple([x[-12:-4] for x in result])
     #recordedDateTup = ('03122017','03132017')
+
+    # Initiate a dataframe
+    df_total = pd.DataFrame()
     # iterate thru each date foa given patient
+
     for j in range(0,len(recordedDateTup)):
             try:
                 recordedDate = recordedDateTup[j]
@@ -124,7 +128,7 @@ for p in range(0,len(patientidtup)):
                 try:
                     df_resample[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']] = df_resample[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']].ffill().bfill()
                     df_resample[np.isnan(df_resample[['Act0to10', 'Act11to20', 'Act21to30', 'Act31to40','Act41to50', 'Act51to60', 'Act61to70', 'Act71to80', 'Act81to90', 'Act91to100']])] = 0
-                    df_resample = df_resample.fillna(0)
+                    #df_resample = df_resample.fillna(0)
                 except:
                     pass
 
@@ -170,20 +174,27 @@ for p in range(0,len(patientidtup)):
                 except:
                     pass
 
+
+                df_total = pd.concat([df_total,df_resample])
                 # fill 0 in the place of na
-                df_resample = df_resample.fillna(0)
+                #df_resample = df_resample.fillna(0)
 
                 #opPath=('C:/Users/sudat/Downloads/Mayo Clinic project/Data/'+patientid+'/preProcessed_'+recordedDate+'_'+patientid+'.csv')
                 #df_resample.to_csv(opPath, sep=',', encoding='utf-8')
                 #df_resample.to_csv('C:/Users/sudat/Downloads/Mayo Clinic project/Data/example.csv')
 
                 # write csv file directly to the zip archive without saving to the disk
-                opFileName= patientid+'_'+recordedDate+'.csv'
-                zf.writestr(opFileName, df_resample.to_csv())
+                #opFileName= patientid+'_'+recordedDate+'.csv'
+                #zf.writestr(opFileName, df_resample.to_csv())
 
                 # print progress
                 print("Patient %s (%d of %d), Date %s (%d of %d)" %(patientid,p+1,len(patientidtup) ,recordedDate,j+1,len(recordedDateTup)))
             except:
                 pass
 
+
+    df_total[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']] = df_total[[' Respiration Rate',' Weight (kg)',' Systolic',' Diastolic']].ffill().bfill()
+    df_total = df_total.fillna(0)
+    opFileName= patientid+'.csv'
+    zf.writestr(opFileName, df_total.to_csv())
     zf.close()
